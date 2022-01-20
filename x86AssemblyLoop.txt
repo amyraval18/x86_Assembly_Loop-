@@ -1,0 +1,88 @@
+;nasm 2.13.02
+;Amy Raval :) CSM145 
+;Mod_7_Quiz
+;This program will read an input from the user (string), the input length is unknown
+;This program will terminate reading the input once a '.' is read at the end of the string 
+;If the letter is uppercase -> lower case
+;If the letter is lowercase -> uppercase 
+; check whether upper or lower -> jump -> display result 
+;do NOT display period 
+
+section .data ;nothing needed here 
+ 
+section .bss
+    counter resb 1 ; counter variable 
+    inputValue resb 255 ; set number of bytes for input (unknown)
+    valAddress resb 255 ; set number of bytes for input address 
+    
+section .text
+	global _start
+
+_start:
+
+    mov [valAddress], byte '0' 
+    
+; user input, cin 
+    mov eax,3           
+	mov ebx,0            
+	mov ecx,inputValue      
+	mov edx,valAddress    
+    int 80h         
+ 
+    ;counter =s.length
+    mov [counter], byte '0'
+    dec byte [counter] ; decrement counter 
+    mov eax, inputValue ; inputValue gets moved into eax 
+    
+    check: 
+        cmp[eax], byte 'Z' ; ascii; checks if letter input is capital 
+        jle lowerCase ; jump less than or equal to 
+       
+        jge upperCase ; jump greater than or equal to 
+        
+ ;converts upper case to lower case    
+ lowerCase: 
+        add [eax], byte ' '; add 32 ascii to lower case ascii 
+        dec byte [counter] ; decrement
+        inc eax            ; increment value in eax
+        cmp [counter], byte 0 ; compare 
+        cmp [eax], byte '.' ; checks to see if letter is period 
+        je delete_Period
+        jnz check ; jump not equal
+        jmp display ; jump to display 
+        
+  ;converts lower case to upper case    
+  upperCase:   
+    ;s[i]=UPPERCASE(s[i])
+    sub[eax], byte ' '; ascii for 32; subtract 32 from cap ascii 
+    ;counter--
+    dec byte [counter] ; decrement counter
+    ;i++
+    inc eax ;increment eax 
+    cmp [counter], byte 0 
+    cmp [eax], byte '.' ; checks to see if letter is a period 
+    je delete_Period ; deletes period input 
+    jnz check ; jump if not equal, go to check 
+    jmp display ; jump to display 
+    
+ 
+  ; deletes period input (stored in eax)  
+ delete_Period: 
+     sub[eax], byte '.' ;subtracts period ascii 
+     jmp display ; jumps to display 
+    
+    
+;displays output after conversions and comparions 
+display: 
+	mov eax,4          
+	mov ebx,1            
+	mov ecx,inputValue       
+	mov edx,255     ; set number of bytes for input 
+	                   
+	int 80h              
+    
+; ends program     
+end:
+	mov eax,1            ; The system call for exit (sys_exit)
+	mov ebx,0            ; Exit with return code of 0 (no error)
+	int 80h;
